@@ -28,9 +28,28 @@ async function initMongo() {
 async function start() {
     const db = await initMongo()
     console.log('Starting server')
+    app.use(express.json())
     app.get('/', (req, res) => res.send('Hello World!'))
-
+    app.post('/note', async (req,res)=>{
+        await saveNote(db, req.body.data);
+        //console.log(req.body.data)
+        res.send('OK')
+    })
+    app.get('/notes', async (req,res) => {
+        let notes = await retrieveNotes(db)
+        res.send(notes)
+    })
     app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+}
+
+
+async function saveNote(db, note) {
+    await db.insertOne(note)
+}
+  
+async function retrieveNotes(db) {
+    const notes = (await db.find().toArray()).reverse()
+    return notes;
 }
 
 start()
